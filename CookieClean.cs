@@ -17,11 +17,11 @@ namespace CookieClean
 
         public void Init(HttpApplication context)
         {
-            context.EndRequest += new EventHandler(End);
+            context.PostReleaseRequestState += new EventHandler(Remove);
         }
         
 
-        public void End(Object source, EventArgs e)
+        public void Remove(Object source, EventArgs e)
         {
             HttpApplication app = (HttpApplication)source;
             HttpRequest request = app.Context.Request;
@@ -30,7 +30,7 @@ namespace CookieClean
             if (Response.Headers.AllKeys.Contains("Set-Cookie"))
             {
 #if DEBUG
-                Debug.WriteLine("[CookieClean]: found set-cookie header");
+                Debug.WriteLine("[CookieClean]: found set-cookie header, path=" + request.Url);
 #endif
                 HttpCookieCollection CookieCollection;
                 HttpCookie Cookie;
@@ -62,6 +62,9 @@ namespace CookieClean
                     }
                     // if we get this far were adding it to our new_cookie list since this cookies value has changed
                     new_cookies.Add(Cookie.Name, Cookie.Value);
+#if DEBUG
+                    Debug.WriteLine("[CookieClean]: adding to new cookies list name=" + Cookie.Name + " value=" + Cookie.Value);
+#endif
                 }
                 // remove all cookies now that we have our new_cookies dictionary
 #if DEBUG
